@@ -1,0 +1,57 @@
+{
+  "tool_id": "splunk_mcp_app:splunk_create_dashboard",
+  "name": "splunk_create_dashboard",
+  "title": "Dashboard Creation Capability",
+  "description": "Creates a new dashboard in the custom_app app. Accepts Simple XML (version=\"1.1\") or Dashboard Studio (version=\"2\" with a <definition> CDATA block). Fails if a dashboard with that ID already exists; to change an existing dashboard use splunk_update_dashboard.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "dashboard_name": {
+        "type": "string",
+        "description": "Dashboard ID (letters, numbers, underscores and hyphens only; becomes the URL name)",
+        "pattern": "^[A-Za-z0-9_-]+$"
+      },
+      "eai_data": {
+        "type": "string",
+        "description": "Complete dashboard source (Simple XML or Dashboard Studio), starting with <dashboard> and containing a <label> element."
+      }
+    },
+    "required": [
+      "dashboard_name",
+      "eai_data"
+    ]
+  },
+  "_meta": {
+    "tags": [
+      "dashboard_creation"
+    ],
+    "examples": [
+      {
+        "name": "Create a simple dashboard",
+        "description": "",
+        "arguments": {
+          "dashboard_name": "error_overview",
+          "eai_data": "<dashboard version=\"1.1\"><label>Error Overview</label><row><panel><chart><search><query>index=main error | timechart count</query><earliest>-24h</earliest><latest>now</latest></search></chart></panel></row></dashboard>"
+        },
+        "expected_use": "When a user asks to create a new Splunk dashboard"
+      }
+    ],
+    "execution": {
+      "type": "api",
+      "method": "POST",
+      "endpoint": "/servicesNS/nobody/custom_app/data/ui/views",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json"
+      },
+      "params": {
+        "output_mode": "json"
+      },
+      "body": {
+        "name": "$dashboard_name$",
+        "eai:data": "$eai_data$"
+      }
+    },
+    "external_app_id": "splunk_mcp_app"
+  }
+}

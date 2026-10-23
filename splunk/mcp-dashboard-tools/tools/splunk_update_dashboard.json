@@ -1,0 +1,56 @@
+{
+  "tool_id": "splunk_mcp_app:splunk_update_dashboard",
+  "name": "splunk_update_dashboard",
+  "title": "Dashboard Update Capability",
+  "description": "Updates an existing dashboard in the custom_app app by replacing its whole source. eai_data must be the complete new dashboard (Simple XML version=\"1.1\" or Dashboard Studio version=\"2\" with a <definition> CDATA block), never just the changed part: anything left out is removed. Read the current source first with splunk_run_query: | rest /servicesNS/nobody/custom_app/data/ui/views/<dashboard_name> splunk_server=local | fields eai:data. Only reaches dashboards shared with the app, not private ones.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "dashboard_name": {
+        "type": "string",
+        "description": "ID of an existing dashboard in custom_app (the name in its URL, not its label)",
+        "pattern": "^[A-Za-z0-9_-]+$"
+      },
+      "eai_data": {
+        "type": "string",
+        "description": "Complete new dashboard source, starting with <dashboard> and containing a <label> element. Replaces the current source entirely."
+      }
+    },
+    "required": [
+      "dashboard_name",
+      "eai_data"
+    ]
+  },
+  "_meta": {
+    "tags": [
+      "dashboard_update"
+    ],
+    "examples": [
+      {
+        "name": "Update an existing dashboard",
+        "description": "",
+        "arguments": {
+          "dashboard_name": "error_overview",
+          "eai_data": "<dashboard version=\"1.1\"><label>Error Overview</label><row><panel><chart><search><query>index=main error | timechart span=1h count by host</query><earliest>-7d</earliest><latest>now</latest></search></chart></panel></row></dashboard>"
+        },
+        "expected_use": "When a user asks to change, fix or extend an existing dashboard in custom_app"
+      }
+    ],
+    "execution": {
+      "type": "api",
+      "method": "POST",
+      "endpoint": "/servicesNS/nobody/custom_app/data/ui/views/$dashboard_name$",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json"
+      },
+      "params": {
+        "output_mode": "json"
+      },
+      "body": {
+        "eai:data": "$eai_data$"
+      }
+    },
+    "external_app_id": "splunk_mcp_app"
+  }
+}
